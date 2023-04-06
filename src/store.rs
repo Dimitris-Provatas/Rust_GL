@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io;
 use std::io::Write;
 
-use crate::gl::Canvas;
+use crate::glib::Canvas;
 
 pub fn save_ppm(
     pixels: &mut Canvas,

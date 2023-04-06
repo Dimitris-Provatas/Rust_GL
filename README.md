@@ -17,13 +17,20 @@ You can edit the main function in [main.rs](./src/main.rs) with your styles, or 
 $ cargo run
 ```
 
+To transform the PPM images to PNGs, go to the outputs folder and run:
+```sh
+$ grep ppm | sed 's/.ppm//' | xargs -Ixx convert xx.ppm xx.png
+```
+
 ## Gallery
 
-![main](./outputs/main.png)
+![logo](./outputs/logo.png)
 
 ![checker](./outputs/checker_example.png)
 
 ![japan](./outputs/japan_flag_example.png)
 
 ![lines](./outputs/lines_example.png)
+
+![triangles](./outputs/triangles_example.png)
 

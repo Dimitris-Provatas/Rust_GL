@@ -154,4 +154,89 @@ pub fn fill_triangle(
     point3_y: i32,
     color: usize,
 ) {
+    // Stupid Borrow Checker, why do you have to be memory safe?
+    let mut x1 = point1_x;
+    let mut y1 = point1_y;
+    let mut x2 = point2_x;
+    let mut y2 = point2_y;
+    let mut x3 = point3_x;
+    let mut y3 = point3_y;
+
+    // Hard-coded Bubble-Sort because we efficient
+    if y1 > y2 {
+        swap(&mut y1, &mut y2);
+        swap(&mut x1, &mut x2);
+    }
+    if y2 > y3 {
+        swap(&mut y2, &mut y3);
+        swap(&mut x2, &mut x3);
+    }
+    if y1 > y2 {
+        swap(&mut y1, &mut y2);
+        swap(&mut x1, &mut x2);
+    }
+
+    // Top half
+    let dx12 = x2 - x1;
+    let dy12 = y2 - y1;
+    let dx13 = x3 - x1;
+    let dy13 = y3 - y1;
+
+    for y in RangeInclusive::new(y1, y2) {
+        if y >= 0 && y < canvas_height as i32 {
+            let mut s1 = if dy12 != 0 {
+                (y - y1) * dx12 / dy12 + x1
+            } else {
+                x1
+            };
+            let mut s2 = if dy13 != 0 {
+                (y - y1) * dx13 / dy13 + x1
+            } else {
+                x1
+            };
+
+            if s1 > s2 {
+                swap(&mut s1, &mut s2);
+            }
+
+            for x in RangeInclusive::new(s1, s2) {
+                if x >= 0 && x < canvas_width as i32 {
+                    pixels[(y * canvas_width as i32 + x) as usize] = color;
+                }
+            }
+        }
+    }
+
+    // Bottom half
+    let dx32 = x2 - x3;
+    let dy32 = y2 - y3;
+    let dx31 = x1 - x3;
+    let dy31 = y1 - y3;
+
+    for y in RangeInclusive::new(y2, y3) {
+        if y >= 0 && y < canvas_height as i32 {
+            let mut s1 = if dy32 != 0 {
+                (y - y3) * dx32 / dy32 + x3
+            } else {
+                x3
+            };
+            let mut s2 = if dy31 != 0 {
+                (y - y3) * dx31 / dy31 + x3
+            } else {
+                x3
+            };
+
+            if s1 > s2 {
+                swap(&mut s1, &mut s2);
+            }
+
+            for x in RangeInclusive::new(s1, s2) {
+                if x >= 0 && x < canvas_width as i32 {
+                    pixels[(y * canvas_width as i32 + x) as usize] = color;
+                }
+            }
+        }
+    }
 }
+
+// TODO: Change all nested ifs in loops to break or continue (e.g. x>=0 -> x < 0 continue | x<canvas_width -> x > canvas_width break )
