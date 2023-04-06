@@ -34,3 +34,5 @@ $ grep ppm | sed 's/.ppm//' | xargs -Ixx convert xx.ppm xx.png
 
 ![triangles](./outputs/triangles_example.png)
 
+![alpha](./outputs/alpha_blend_example.png)
+

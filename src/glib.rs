@@ -3,6 +3,14 @@ use std::mem::swap;
 
 pub type Canvas = [usize; crate::WIDTH * crate::HEIGHT];
 
+#[derive(Debug)]
+pub struct Color {
+    r: i32,
+    g: i32,
+    b: i32,
+    a: i32,
+}
+
 pub fn fill_bg(pixels: &mut Canvas, width: usize, height: usize, color: usize) {
     for i in 0..width * height {
         pixels[i] = color;
@@ -27,7 +35,8 @@ pub fn fill_rect(
                 let x = rect_pos_x + dx;
 
                 if x >= 0 && x < canvas_width as i32 {
-                    pixels[(y * canvas_width as i32 + x) as usize] = color;
+                    pixels[(y * canvas_width as i32 + x) as usize] =
+                        blend_colors(pixels[(y * canvas_width as i32 + x) as usize], color);
                 }
             }
         }
@@ -56,7 +65,8 @@ pub fn fill_circle(
                     let dy = y - center_y;
 
                     if (dx * dx) as i32 + (dy * dy) as i32 <= (radius * radius) as i32 {
-                        pixels[(y * canvas_width as i32 + x) as usize] = color;
+                        pixels[(y * canvas_width as i32 + x) as usize] =
+                            blend_colors(pixels[(y * canvas_width as i32 + x) as usize], color);
                     }
                 }
             }
@@ -121,7 +131,8 @@ pub fn draw_line(
 
                 for y in cy..=ny {
                     if y >= 0 && y < canvas_height as i32 {
-                        pixels[(y * canvas_width as i32 + x) as usize] = color;
+                        pixels[(y * canvas_width as i32 + x) as usize] =
+                            blend_colors(pixels[(y * canvas_width as i32 + x) as usize], color);
                     }
                 }
             }
@@ -135,7 +146,8 @@ pub fn draw_line(
 
             for y in y1..y2 {
                 if y >= 0 && y < canvas_height as i32 {
-                    pixels[(y * canvas_width as i32 + start_x) as usize] = color;
+                    pixels[(y * canvas_width as i32 + start_x) as usize] =
+                        blend_colors(pixels[(y * canvas_width as i32 + start_x) as usize], color);
                 }
             }
         }
@@ -201,7 +213,8 @@ pub fn fill_triangle(
 
             for x in s1..=s2 {
                 if x >= 0 && x < canvas_width as i32 {
-                    pixels[(y * canvas_width as i32 + x) as usize] = color;
+                    pixels[(y * canvas_width as i32 + x) as usize] =
+                        blend_colors(pixels[(y * canvas_width as i32 + x) as usize], color);
                 }
             }
         }
@@ -213,7 +226,8 @@ pub fn fill_triangle(
     let dx31 = x1 - x3;
     let dy31 = y1 - y3;
 
-    for y in y2..=y3 {
+    // skip one line since we already draw it on the previous itteration
+    for y in y2 + 1..=y3 {
         if y >= 0 && y < canvas_height as i32 {
             let mut s1 = if dy32 != 0 {
                 (y - y3) * dx32 / dy32 + x3
@@ -232,11 +246,50 @@ pub fn fill_triangle(
 
             for x in s1..=s2 {
                 if x >= 0 && x < canvas_width as i32 {
-                    pixels[(y * canvas_width as i32 + x) as usize] = color;
+                    pixels[(y * canvas_width as i32 + x) as usize] =
+                        blend_colors(pixels[(y * canvas_width as i32 + x) as usize], color);
                 }
             }
         }
     }
+}
+
+fn unpack_rgba(color: usize) -> Color {
+    return Color {
+        r: (color >> 8 * 0 & 0xFF) as i32,
+        g: (color >> 8 * 1 & 0xFF) as i32,
+        b: (color >> 8 * 2 & 0xFF) as i32,
+        a: (color >> 8 * 3 & 0xFF) as i32,
+    };
+}
+
+fn repack_rgba(color: Color) -> usize {
+    let mut res: usize = 0;
+
+    res |= (color.a << 8 * 3) as usize;
+    res |= (color.b << 8 * 2) as usize;
+    res |= (color.g << 8 * 1) as usize;
+    res |= (color.r << 8 * 0) as usize;
+
+    return res;
+}
+
+fn blend_colors(color1: usize, color2: usize) -> usize {
+    let c1: Color = unpack_rgba(color1);
+    let c2: Color = unpack_rgba(color2);
+
+    let fcr = (c1.r + (c2.r - c1.r) * c2.a / 255).clamp(0, 255);
+    let fcg = (c1.g + (c2.g - c1.g) * c2.a / 255).clamp(0, 255);
+    let fcb = (c1.b + (c2.b - c1.b) * c2.a / 255).clamp(0, 255);
+
+    let final_color: Color = Color {
+        r: fcr,
+        g: fcg,
+        b: fcb,
+        a: c1.a,
+    };
+
+    return repack_rgba(final_color);
 }
 
 // TODO: Change all nested ifs in loops to break or continue (e.g. x>=0 -> x < 0 continue | x<canvas_width -> x > canvas_width break )

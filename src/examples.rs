@@ -11,13 +11,15 @@ pub fn examples(pixels: &mut glib::Canvas) {
     triangles(pixels);
 
     logo(pixels);
+
+    alpha_blending(pixels);
 }
 
 fn checker_board(pixels: &mut glib::Canvas) {
-    const COLS: usize = 8;
-    const ROWS: usize = 6;
-    const CELL_WIDTH: usize = crate::WIDTH / COLS;
-    const CELL_HEIGHT: usize = crate::HEIGHT / ROWS;
+    const COLS: i32 = 8;
+    const ROWS: i32 = 6;
+    const CELL_WIDTH: i32 = crate::WIDTH as i32 / COLS;
+    const CELL_HEIGHT: i32 = crate::HEIGHT as i32 / ROWS;
 
     const WHITE: usize = 0xFFFFFFFF;
     const BLACK: usize = 0x00000000;
@@ -182,8 +184,8 @@ fn lines(pixels: &mut glib::Canvas) {
 fn logo(pixels: &mut glib::Canvas) {
     glib::fill_bg(pixels, crate::WIDTH, crate::HEIGHT, crate::BG_COLOR);
 
-    let rect_w: usize = 200;
-    let rect_h: usize = 120;
+    let rect_w: i32 = 200;
+    let rect_h: i32 = 120;
     glib::fill_rect(
         pixels,
         crate::WIDTH,
@@ -409,5 +411,60 @@ fn triangles(pixels: &mut glib::Canvas) {
         crate::WIDTH,
         crate::HEIGHT,
         "outputs/triangles_example.ppm".to_string(),
+    );
+}
+
+fn alpha_blending(pixels: &mut glib::Canvas) {
+    glib::fill_bg(pixels, crate::WIDTH, crate::HEIGHT, crate::BG_COLOR);
+
+    glib::fill_rect(
+        pixels,
+        crate::WIDTH,
+        crate::HEIGHT,
+        0,
+        0,
+        crate::WIDTH as i32 * 3 / 4,
+        crate::HEIGHT as i32 * 3 / 4,
+        0xFF0000FF,
+    );
+    glib::fill_rect(
+        pixels,
+        crate::WIDTH,
+        crate::HEIGHT,
+        crate::WIDTH as i32,
+        crate::HEIGHT as i32,
+        -(crate::WIDTH as i32) * 3 / 8,
+        -(crate::HEIGHT as i32) * 3 / 8,
+        0xCCFF0000,
+    );
+
+    glib::fill_circle(
+        pixels,
+        crate::WIDTH,
+        crate::HEIGHT,
+        crate::WIDTH as i32 * 3 / 4,
+        crate::HEIGHT as i32 * 3 / 8,
+        175,
+        0xAA00FF00,
+    );
+
+    glib::fill_triangle(
+        pixels,
+        crate::WIDTH,
+        crate::HEIGHT,
+        crate::WIDTH as i32 / 2,
+        crate::HEIGHT as i32 / 8,
+        crate::WIDTH as i32 / 8,
+        crate::HEIGHT as i32 * 7 / 8,
+        crate::WIDTH as i32 * 23 / 32,
+        crate::HEIGHT as i32 * 3 / 4,
+        0x8800FFFF,
+    );
+
+    let _ = store::save_ppm(
+        pixels,
+        crate::WIDTH,
+        crate::HEIGHT,
+        "outputs/alpha_blend_example.ppm".to_string(),
     );
 }
