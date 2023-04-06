@@ -1,5 +1,5 @@
+use std::cmp::{max, min};
 use std::mem::swap;
-use std::ops::RangeInclusive;
 
 pub type Canvas = [usize; crate::WIDTH * crate::HEIGHT];
 
@@ -15,15 +15,15 @@ pub fn fill_rect(
     canvas_height: usize,
     rect_pos_x: i32,
     rect_pos_y: i32,
-    rect_width: usize,
-    rect_height: usize,
+    rect_width: i32,
+    rect_height: i32,
     color: usize,
 ) {
-    for dy in 0..rect_height as i32 {
+    for dy in min(0, rect_height)..max(0, rect_height) {
         let y = rect_pos_y + dy;
 
         if y >= 0 && y < canvas_height as i32 {
-            for dx in 0..rect_width as i32 {
+            for dx in min(0, rect_width)..max(0, rect_width) {
                 let x = rect_pos_x + dx;
 
                 if x >= 0 && x < canvas_width as i32 {
@@ -119,7 +119,7 @@ pub fn draw_line(
                     swap(&mut cy, &mut ny);
                 }
 
-                for y in RangeInclusive::new(cy, ny) {
+                for y in cy..=ny {
                     if y >= 0 && y < canvas_height as i32 {
                         pixels[(y * canvas_width as i32 + x) as usize] = color;
                     }
@@ -182,7 +182,7 @@ pub fn fill_triangle(
     let dx13 = x3 - x1;
     let dy13 = y3 - y1;
 
-    for y in RangeInclusive::new(y1, y2) {
+    for y in y1..=y2 {
         if y >= 0 && y < canvas_height as i32 {
             let mut s1 = if dy12 != 0 {
                 (y - y1) * dx12 / dy12 + x1
@@ -199,7 +199,7 @@ pub fn fill_triangle(
                 swap(&mut s1, &mut s2);
             }
 
-            for x in RangeInclusive::new(s1, s2) {
+            for x in s1..=s2 {
                 if x >= 0 && x < canvas_width as i32 {
                     pixels[(y * canvas_width as i32 + x) as usize] = color;
                 }
@@ -213,7 +213,7 @@ pub fn fill_triangle(
     let dx31 = x1 - x3;
     let dy31 = y1 - y3;
 
-    for y in RangeInclusive::new(y2, y3) {
+    for y in y2..=y3 {
         if y >= 0 && y < canvas_height as i32 {
             let mut s1 = if dy32 != 0 {
                 (y - y3) * dx32 / dy32 + x3
@@ -230,7 +230,7 @@ pub fn fill_triangle(
                 swap(&mut s1, &mut s2);
             }
 
-            for x in RangeInclusive::new(s1, s2) {
+            for x in s1..=s2 {
                 if x >= 0 && x < canvas_width as i32 {
                     pixels[(y * canvas_width as i32 + x) as usize] = color;
                 }
